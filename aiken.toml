@@ -1,0 +1,14 @@
+name = "aiken-lang/escrow-contract"
+version = "0.0.0"
+license = "Apache-2.0"
+description = "Aiken contracts for project 'aiken-lang/escrow-contract'"
+
+[repository]
+user = "aiken-lang"
+project = "escrow-contract"
+platform = "github"
+
+[[dependencies]]
+name = "aiken-lang/stdlib"
+version = "1.5.0"
+source = "github"

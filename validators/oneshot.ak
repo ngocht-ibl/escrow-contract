@@ -16,23 +16,23 @@ type Datum {
   clientPubKeyHash: VerificationKeyHash,
   contractorPubKeyHash: VerificationKeyHash,
   progress: Int,
-  isDone: Bool,
+  isDone: Int,
 }
 
 type VerificationKeyHash =
   Hash<Blake2b_224, VerificationKey>
 
 type Redeemer {
-  ClientUpdate { isDone: Bool }
+  ClientUpdate { isDone: Int }
   ContractorUpdate { progress: Int }
 }
 
 validator {
   fn lock(datum: Datum, redeemer: Redeemer, ctx: ScriptContext) {
-    when ctx.purpose is {
-      Spend(output_ref) ->
-        when redeemer is {
-          ClientUpdate { isDone } -> and {
+    when redeemer is {
+      ClientUpdate { isDone } ->
+        when ctx.purpose is {
+          Spend(output_ref) -> and {
               must_be_signed_by(ctx.transaction, datum.clientPubKeyHash),
               {
                 let datum_in_output =
@@ -42,7 +42,11 @@ validator {
               },
               must_lock_assets(ctx.transaction, output_ref),
             }
-          ContractorUpdate { progress } -> and {
+          _ -> False
+        }
+      ContractorUpdate { progress } ->
+        when ctx.purpose is {
+          Spend(output_ref) -> and {
               must_be_signed_by(ctx.transaction, datum.contractorPubKeyHash)?,
               {
                 let datum_in_output =
@@ -52,8 +56,8 @@ validator {
               },
               must_lock_assets(ctx.transaction, output_ref),
             }
+          _ -> False
         }
-      _ -> False
     }
   }
 }

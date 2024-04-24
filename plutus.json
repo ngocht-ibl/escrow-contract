@@ -1,0 +1,103 @@
+{
+  "preamble": {
+    "title": "aiken-lang/escrow-contract",
+    "description": "Aiken contracts for project 'aiken-lang/escrow-contract'",
+    "version": "0.0.0",
+    "plutusVersion": "v2",
+    "compiler": {
+      "name": "Aiken",
+      "version": "v1.0.24-alpha+982eff4"
+    },
+    "license": "Apache-2.0"
+  },
+  "validators": [
+    {
+      "title": "oneshot.lock",
+      "datum": {
+        "title": "datum",
+        "schema": {
+          "$ref": "#/definitions/oneshot~1Datum"
+        }
+      },
+      "redeemer": {
+        "title": "redeemer",
+        "schema": {
+          "$ref": "#/definitions/oneshot~1Redeemer"
+        }
+      },
+      "compiledCode": "5903ed010000323232323232323232222323232533300932323232323232323253330123370e9000004899191919299980b19b87480080044c8c94ccc060cc01cc038c05804cdd71804980b00a8a99980c19b87375a603a603c603c603c603c603c602c66010601c602c02600200a266014601c602c0260022940528180e000980a0010a5030140013007301200f375a6030002602001c264646464a66602c66e1d200200113232533301833007300e3016013375c603a603c603c603c602c02a2a66603066e1cdd6980e980f180f180f180f180b198041807180b0098008028998051807180b0098008a5014a0603800260280042940c050004c01cc04803cdd6980c00098080071119191980080080111299980c8008a501323253330183371e00400c29444cc010010004c074008dd7180d8009bac30183019301930193019301930193019301930110022232323232323253330183370e9000180b8008991919299980d99b8748008c0680044c8c8c8c94ccc07ccdc3a4000603c0022646464a66604466e1d200430210011323232002301e00130280013020001163012301f0013025001301d00116533302100114c103d87a800013374a9000198111811800a5eb80c8cc004004020894ccc08800452f5c026464a6660426464a66604666e1d200200113371e00e6eb8c0a0c0840085281810800980b980f980b980f80109981280119802002000899802002000981300118120009bae30210013019001163010301830103018300d3018001301e0013016001163300b00400637586036002603600260340046eb0c060004c0400088c054c058c05800488c8c8c8c8c8c94ccc058cdc3a4000602a0022646464a66603200229445281919299980d19b87480000045288a5030180013300d004253330193375e6018602e0026018602e6018602e004266ebcc03cc05c004c03cc05cc030c05c008528180e000980a0008b198048020031bac3019001301900130180023758602c002601c0044602660280024466006004466ebcc014c03400400888c8cc00400400c894ccc048004530103d87a8000132325333011300500213374a90001980a80125eb804cc010010004c058008c0500048c040004c020014526136563253330093370e900000089919299980718088010a4c2c6eb4c03c004c01c01454ccc024cdc3a400400226464a66601c60220042930b1bad300f0013007005163007004300100423253330083370e90000008991919191919191919191919299980b980d0010a4c2c6eb4c060004c060008dd6980b000980b0011bae30140013014002375c602400260240046eb8c040004c040008dd7180700098030010b1803000918029baa001230033754002ae6955ceaab9e5573eae815d0aba21",
+      "hash": "c31d9c720382c083fa251766efa991d31c2d3aeb4237fa75887547ac"
+    }
+  ],
+  "definitions": {
+    "ByteArray": {
+      "dataType": "bytes"
+    },
+    "Int": {
+      "dataType": "integer"
+    },
+    "oneshot/Datum": {
+      "title": "Datum",
+      "anyOf": [
+        {
+          "title": "Datum",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [
+            {
+              "title": "projectName",
+              "$ref": "#/definitions/ByteArray"
+            },
+            {
+              "title": "projectRequirements",
+              "$ref": "#/definitions/ByteArray"
+            },
+            {
+              "title": "clientPubKeyHash",
+              "$ref": "#/definitions/ByteArray"
+            },
+            {
+              "title": "contractorPubKeyHash",
+              "$ref": "#/definitions/ByteArray"
+            },
+            {
+              "title": "progress",
+              "$ref": "#/definitions/Int"
+            },
+            {
+              "title": "isDone",
+              "$ref": "#/definitions/Int"
+            }
+          ]
+        }
+      ]
+    },
+    "oneshot/Redeemer": {
+      "title": "Redeemer",
+      "anyOf": [
+        {
+          "title": "ClientUpdate",
+          "dataType": "constructor",
+          "index": 0,
+          "fields": [
+            {
+              "title": "isDone",
+              "$ref": "#/definitions/Int"
+            }
+          ]
+        },
+        {
+          "title": "ContractorUpdate",
+          "dataType": "constructor",
+          "index": 1,
+          "fields": [
+            {
+              "title": "progress",
+              "$ref": "#/definitions/Int"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

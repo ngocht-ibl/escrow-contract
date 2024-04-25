@@ -62,6 +62,7 @@ const scUtxos = contractUtxos.filter((utxo) => {
     return false;
   }
 });
+console.log("scUtxos: ", scUtxos);
 
 if (scUtxos.length === 0) {
   console.log("No redeemable utxo found. You need to wait a little longer...");
@@ -77,17 +78,16 @@ console.log("prevDatum: ", prevDatum);
 const datum = Data.to<Datum>(
   {
     ...prevDatum,
-    progress: 20n,
-    isDone: 0n
+    progress: 15n,
   },
   Datum
 );
 
-const redeemer = Data.to(new Constr(1, [20n]));
+const redeemer = Data.to(new Constr(1, [15n]));
 
 const tx = await updateAndLock({
   using: redeemer,
-  from: validator
+  from: validator,
 });
 
 await lucid.awaitTx(tx);
@@ -100,25 +100,23 @@ console.log(`1 tADA locked into the contract
 // // --- Supporting functions
 
 async function updateAndLock({ from, using }): Promise<TxHash> {
-
-  console.log('scUtxos: ', scUtxos)
-  console.log('using: ', using)
-  console.log('datum: ', datum)
-
   try {
     const tx = await lucid
-    .newTx()
-    .collectFrom(scUtxos, using)
-    .addSigner(await lucid.wallet.address())
-    .attachSpendingValidator(from)
-    .payToContract(contractAddress, { inline: datum }, { lovelace: 1000000 })
-    .complete();
-  const signedTx = await tx.sign().complete();
-  return signedTx.submit();
+      .newTx()
+      .collectFrom(scUtxos, using)
+      .addSigner(await lucid.wallet.address())
+      .attachSpendingValidator(from)
+      .payToContract(
+        contractAddress,
+        { inline: datum },
+        { lovelace: scUtxo.assets.lovelace }
+      )
+      .complete();
+    const signedTx = await tx.sign().complete();
+    return signedTx.submit();
   } catch (error) {
-    console.log('error: ', error)
+    console.log("error: ", error);
   }
- 
 }
 // Tx ID: 6261db5964000e893157a4abe0cb04923a037ead10e3580a217c386f8709e180
 // Datum: d8799f1903e8ff

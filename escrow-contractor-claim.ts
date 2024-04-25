@@ -63,6 +63,8 @@ const scUtxos = contractUtxos.filter((utxo) => {
   }
 });
 
+console.log("scUtxos: ", scUtxos);
+
 if (scUtxos.length === 0) {
   console.log("No redeemable utxo found. You need to wait a little longer...");
   Deno.exit(1);
@@ -84,9 +86,6 @@ console.log(`1 tADA locked into the contract
 // // --- Supporting functions
 
 async function claim({ from, using }): Promise<TxHash> {
-  console.log("scUtxos: ", scUtxos);
-  console.log("using: ", using);
-
   try {
     const tx = await lucid
       .newTx()

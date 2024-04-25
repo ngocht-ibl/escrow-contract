@@ -65,7 +65,7 @@ const datum = Data.to<Datum>(
   Datum
 );
 
-const txLock = await lock(1000000, { into: validator, datum: datum });
+const txLock = await lock(10000000, { into: validator, datum: datum });
 
 await lucid.awaitTx(txLock);
 

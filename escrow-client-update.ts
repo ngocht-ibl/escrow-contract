@@ -34,15 +34,8 @@ async function readValidator(): Promise<SpendingValidator> {
 
 const validator = await readValidator();
 
-const clientPublicKeyHash = lucid.utils.getAddressDetails(
-  await lucid.wallet.address()
-).paymentCredential.hash;
-
-const contractorPublicKeyHash = lucid.utils.getAddressDetails(
-  await Deno.readTextFile("./contractor.addr")
-).paymentCredential.hash;
-
-console.log("contractorPublicKeyHash", contractorPublicKeyHash);
+const contractAddress = lucid.utils.validatorToAddress(validator);
+const contractUtxos = await lucid.utxosAt(contractAddress);
 
 const Datum = Data.Object({
   projectName: Data.Bytes,
@@ -55,38 +48,71 @@ const Datum = Data.Object({
 
 type Datum = Data.Static<typeof Datum>;
 
+const clientPublicKeyHash = lucid.utils.getAddressDetails(
+  await lucid.wallet.address()
+).paymentCredential.hash;
+
+const scUtxos = contractUtxos.filter((utxo) => {
+  try {
+    let datum = Data.from<Datum>(utxo.datum, Datum);
+
+    return datum.clientPubKeyHash === clientPublicKeyHash;
+  } catch (error) {
+    console.log("filtering smart contract utxos failed: ", error);
+    return false;
+  }
+});
+
+if (scUtxos.length === 0) {
+  console.log("No redeemable utxo found. You need to wait a little longer...");
+  Deno.exit(1);
+}
+
+const scUtxo = scUtxos[0];
+
+const prevDatum = Data.from<Datum>(scUtxo.datum, Datum);
+
+console.log("prevDatum: ", prevDatum);
+
 const datum = Data.to<Datum>(
   {
-    projectName: fromText("Training Aiken"),
-    projectRequirements: fromText("Support a new members"),
-    clientPubKeyHash: clientPublicKeyHash,
-    contractorPubKeyHash: contractorPublicKeyHash,
-    progress: 0n,
-    isDone: 0n,
+    ...prevDatum,
+    isDone: 1n
   },
   Datum
 );
 
-const txLock = await lock(1000000, { into: validator, datum: datum });
+const redeemer = Data.to(new Constr(0, [1n]));
 
-await lucid.awaitTx(txLock);
+const tx = await updateAndLock({
+  using: redeemer,
+  from: validator
+});
+
+await lucid.awaitTx(tx);
 
 console.log(`1 tADA locked into the contract
-      Tx ID: ${txLock}
+      Tx ID: ${tx}
       Datum: ${datum}
   `);
 
-// --- Supporting functions
+// // --- Supporting functions
 
-async function lock(lovelace, { into, datum }): Promise<TxHash> {
-  const contractAddress = lucid.utils.validatorToAddress(into);
-
-  const tx = await lucid
+async function updateAndLock({ from, using }): Promise<TxHash> {
+  try {
+    const tx = await lucid
     .newTx()
-    .payToContract(contractAddress, { inline: datum }, { lovelace })
+    .collectFrom(scUtxos, using)
+    .addSigner(await lucid.wallet.address())
+    .attachSpendingValidator(from)
+    .payToContract(contractAddress, { inline: datum }, { lovelace: 1000000 })
     .complete();
   const signedTx = await tx.sign().complete();
   return signedTx.submit();
+  } catch (error) {
+    console.log('error: ', error)
+  }
+ 
 }
 // Tx ID: 6261db5964000e893157a4abe0cb04923a037ead10e3580a217c386f8709e180
 // Datum: d8799f1903e8ff

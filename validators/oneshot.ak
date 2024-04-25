@@ -25,39 +25,74 @@ type VerificationKeyHash =
 type Redeemer {
   ClientUpdate { isDone: Int }
   ContractorUpdate { progress: Int }
+  ContractorClaim
 }
 
 validator {
   fn lock(datum: Datum, redeemer: Redeemer, ctx: ScriptContext) {
-    when redeemer is {
-      ClientUpdate { isDone } ->
-        when ctx.purpose is {
-          Spend(output_ref) -> and {
+    when ctx.purpose is {
+      Spend(output_ref) ->
+        when redeemer is {
+          ClientUpdate { isDone } -> and {
               must_be_signed_by(ctx.transaction, datum.clientPubKeyHash),
               {
                 let datum_in_output =
                   get_datum_in_output(ctx.transaction, output_ref)
 
-                datum_in_output.isDone == isDone
+                if datum_in_output.projectName != datum.projectName {
+                  trace @"PROJECT_NAME_MUST_BE_UNCHANGED"
+                  False
+                } else if datum_in_output.projectRequirements != datum.projectRequirements {
+                  trace @"PROJECT_REQUIREMENTS_MUST_BE_UNCHANGED"
+                  False
+                } else if datum_in_output.clientPubKeyHash != datum.clientPubKeyHash {
+                  trace @"CLIENT_PUB_KEY_HASH_MUST_BE_UNCHANGED"
+                  False
+                } else if datum_in_output.contractorPubKeyHash != datum.contractorPubKeyHash {
+                  trace @"CONTRACTOR_PUB_KEY_HASH_MUST_BE_UNCHANGED"
+                  False
+                } else if datum_in_output.progress != datum.progress {
+                  trace @"PROGRESS_MUST_BE_UNCHANGED"
+                  False
+                } else {
+                  datum_in_output.isDone == isDone
+                }
               },
               must_lock_assets(ctx.transaction, output_ref),
             }
-          _ -> False
-        }
-      ContractorUpdate { progress } ->
-        when ctx.purpose is {
-          Spend(output_ref) -> and {
+          ContractorUpdate { progress } -> and {
               must_be_signed_by(ctx.transaction, datum.contractorPubKeyHash)?,
               {
                 let datum_in_output =
                   get_datum_in_output(ctx.transaction, output_ref)
 
-                datum_in_output.progress == progress
+                if datum_in_output.projectName != datum.projectName {
+                  trace @"PROJECT_NAME_MUST_BE_UNCHANGED"
+                  False
+                } else if datum_in_output.projectRequirements != datum.projectRequirements {
+                  trace @"PROJECT_REQUIREMENTS_MUST_BE_UNCHANGED"
+                  False
+                } else if datum_in_output.clientPubKeyHash != datum.clientPubKeyHash {
+                  trace @"CLIENT_PUB_KEY_HASH_MUST_BE_UNCHANGED"
+                  False
+                } else if datum_in_output.contractorPubKeyHash != datum.contractorPubKeyHash {
+                  trace @"CONTRACTOR_PUB_KEY_HASH_MUST_BE_UNCHANGED"
+                  False
+                } else if datum_in_output.isDone != datum.isDone {
+                  trace @"DONE_MUST_BE_UNCHANGED"
+                  False
+                } else {
+                  datum_in_output.progress == progress
+                }
               },
               must_lock_assets(ctx.transaction, output_ref),
             }
-          _ -> False
+          ContractorClaim -> and {
+              must_be_signed_by(ctx.transaction, datum.contractorPubKeyHash)?,
+              datum.isDone == 1,
+            }
         }
+      _ -> False
     }
   }
 }

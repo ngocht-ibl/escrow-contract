@@ -55,7 +55,7 @@ validator {
                   trace @"PROGRESS_MUST_BE_UNCHANGED"
                   False
                 } else {
-                  datum_in_output.isDone == isDone
+                  isDone == 1 && datum.isDone != isDone && datum_in_output.isDone == isDone
                 }
               },
               must_lock_assets(ctx.transaction, output_ref),
@@ -82,7 +82,7 @@ validator {
                   trace @"DONE_MUST_BE_UNCHANGED"
                   False
                 } else {
-                  datum_in_output.progress == progress
+                  progress > 0 && progress <= 100 && progress > datum.progress && datum_in_output.progress == progress
                 }
               },
               must_lock_assets(ctx.transaction, output_ref),

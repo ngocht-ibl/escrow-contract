@@ -74,15 +74,17 @@ const prevDatum = Data.from<Datum>(scUtxo.datum, Datum);
 
 console.log("prevDatum: ", prevDatum);
 
+const isDone = 1n;
+
 const datum = Data.to<Datum>(
   {
     ...prevDatum,
-    isDone: 1n,
+    isDone,
   },
   Datum
 );
 
-const redeemer = Data.to(new Constr(0, [1n]));
+const redeemer = Data.to(new Constr(0, [isDone]));
 
 const tx = await updateAndLock({
   using: redeemer,

@@ -75,15 +75,16 @@ const prevDatum = Data.from<Datum>(scUtxo.datum, Datum);
 
 console.log("prevDatum: ", prevDatum);
 
+const progress = 30n;
 const datum = Data.to<Datum>(
   {
     ...prevDatum,
-    progress: 15n,
+    progress,
   },
   Datum
 );
 
-const redeemer = Data.to(new Constr(1, [15n]));
+const redeemer = Data.to(new Constr(1, [progress]));
 
 const tx = await updateAndLock({
   using: redeemer,
